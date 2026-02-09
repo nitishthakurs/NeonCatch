@@ -1,215 +1,234 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Catch | Mini Game</title>
-    <style>
-        :root {
-            --neon-blue: #00d2ff;
-            --neon-pink: #ff007f;
-            --bg: #0a0a12;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Neon Mobile Catch</title>
+  <style>
+    :root {
+      --neon-blue: #00d2ff;
+      --neon-pink: #ff007f;
+      --bg: #05050a;
+    }
 
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
+    * {
+      box-sizing: border-box;
+      touch-action: none; /* Prevents scrolling while playing */
+    }
 
-        #game-container {
-            position: relative;
-            width: 400px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 20px var(--neon-blue);
-            border-radius: 15px;
-            overflow: hidden;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        #player {
-            position: absolute;
-            bottom: 20px;
-            left: 175px;
-            width: 50px;
-            height: 10px;
-            background: var(--neon-blue);
-            box-shadow: 0 0 15px var(--neon-blue);
-            border-radius: 5px;
-            transition: transform 0.1s ease;
-        }
+    #game-wrapper {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #05050a 100%);
+      overflow: hidden;
+    }
 
-        .item {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-        }
+    #player {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      width: 80px;
+      height: 15px;
+      background: var(--neon-blue);
+      box-shadow: 0 0 20px var(--neon-blue);
+      border-radius: 10px;
+      transform: translateX(-50%);
+    }
 
-        .gem {
-            background: var(--neon-pink);
-            box-shadow: 0 0 10px var(--neon-pink);
-        }
+    .item {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      z-index: 5;
+    }
 
-        .bomb {
-            background: #ff4d4d;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-        }
+    .gem {
+      background: var(--neon-pink);
+      box-shadow: 0 0 15px var(--neon-pink);
+    }
 
-        #ui {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            pointer-events: none;
-        }
+    .bomb {
+      background: #fff;
+      box-shadow: 0 0 15px #ff4d4d;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
 
-        .score-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--neon-blue);
-        }
+    #ui {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
+      z-index: 10;
+    }
 
-        #game-over {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border: 1px solid var(--neon-pink);
-            border-radius: 10px;
-            z-index: 100;
-        }
+    .score-board {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--neon-blue);
+    }
 
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: var(--neon-blue);
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-    </style>
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      padding: 15px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      background: transparent;
+      border: 2px solid var(--neon-pink);
+      border-radius: 50px;
+      box-shadow: 0 0 15px var(--neon-pink);
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
 </head>
-
 <body>
 
-    <div id="ui">
-        <div class="score-text">Score: <span id="score">0</span></div>
-    </div>
+  <div id="ui">
+    <div class="score-board">SCORE: <span id="score">0</span></div>
+  </div>
 
-    <div id="game-container">
-        <div id="player"></div>
-        <div id="game-over">
-            <h2>Game Over!</h2>
-            <p id="final-score"></p>
-            <button onclick="resetGame()">Try Again</button>
-        </div>
-    </div>
+  <div id="game-wrapper">
+    <div id="player"></div>
+  </div>
 
-    <p style="margin-top: 20px; color: #888;">Move Mouse / Touch to Catch</p>
+  <div id="overlay">
+    <h1 id="status-title">NEON CATCH</h1>
+    <p id="status-msg">Slide your finger to move</p>
+    <button onclick="startGame()">START GAME</button>
+  </div>
 
-    <script>
-        const container = document.getElementById('game-container');
-        const player = document.getElementById('player');
-        const scoreElement = document.getElementById('score');
-        const gameOverScreen = document.getElementById('game-over');
+  <script>
+    const wrapper = document.getElementById('game-wrapper');
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    const overlay = document.getElementById('overlay');
+    const statusTitle = document.getElementById('status-title');
+    const statusMsg = document.getElementById('status-msg');
 
-        let score = 0;
-        let gameActive = true;
-        let speedMultiplier = 1;
+    let score = 0;
+    let isActive = false;
+    let speed = 4;
+    let spawnRate = 1000;
+    let spawnTimer;
 
-        // Move Player
-        container.addEventListener('mousemove', (e) => {
-            if (!gameActive) return;
-            const rect = container.getBoundingClientRect();
-            let x = e.clientX - rect.left - player.offsetWidth / 2;
-            x = Math.max(0, Math.min(x, container.offsetWidth - player.offsetWidth));
-            player.style.left = x + 'px';
-        });
+    // Mobile-Friendly Touch Control
+    function handleMove(e) {
+      if (!isActive) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const wrapperRect = wrapper.getBoundingClientRect();
+      let x = clientX - wrapperRect.left;
+      
+      // Keep within bounds
+      x = Math.max(player.offsetWidth / 2, Math.min(x, wrapper.offsetWidth - player.offsetWidth / 2));
+      player.style.left = x + 'px';
+    }
 
-        function createItem() {
-            if (!gameActive) return;
+    wrapper.addEventListener('touchmove', handleMove, { passive: false });
+    wrapper.addEventListener('mousemove', handleMove);
 
-            const item = document.createElement('div');
-            const isBomb = Math.random() > 0.8;
-            item.className = isBomb ? 'item bomb' : 'item gem';
+    function createItem() {
+      if (!isActive) return;
 
-            item.style.left = Math.random() * (container.offsetWidth - 20) + 'px';
-            item.style.top = '-20px';
-            container.appendChild(item);
+      const item = document.createElement('div');
+      const isBomb = Math.random() > 0.85;
+      item.className = isBomb ? 'item bomb' : 'item gem';
+      
+      const randomX = Math.random() * (wrapper.offsetWidth - 30) + 15;
+      item.style.left = randomX + 'px';
+      item.style.top = '-50px';
+      wrapper.appendChild(item);
 
-            let top = -20;
-            const fallInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(fallInterval);
-                    item.remove();
-                    return;
-                }
-
-                top += 3 * speedMultiplier;
-                item.style.top = top + 'px';
-
-                // Collision Detection
-                const pRect = player.getBoundingClientRect();
-                const iRect = item.getBoundingClientRect();
-
-                if (
-                    iRect.bottom >= pRect.top &&
-                    iRect.left < pRect.right &&
-                    iRect.right > pRect.left
-                ) {
-                    if (isBomb) {
-                        endGame();
-                    } else {
-                        score += 10;
-                        scoreElement.innerText = score;
-                        speedMultiplier += 0.02; // Speed up the game
-                        item.remove();
-                        clearInterval(fallInterval);
-                    }
-                }
-
-                // Remove if off screen
-                if (top > container.offsetHeight) {
-                    item.remove();
-                    clearInterval(fallInterval);
-                }
-            }, 16);
+      let topPos = -50;
+      
+      const fall = setInterval(() => {
+        if (!isActive) {
+          clearInterval(fall);
+          item.remove();
+          return;
         }
 
-        function endGame() {
-            gameActive = false;
-            gameOverScreen.style.display = 'block';
-            document.getElementById('final-score').innerText = "Final Score: " + score;
+        topPos += speed;
+        item.style.top = topPos + 'px';
+
+        const pRect = player.getBoundingClientRect();
+        const iRect = item.getBoundingClientRect();
+
+        // Mobile-optimized Collision
+        if (
+          iRect.bottom >= pRect.top &&
+          iRect.top <= pRect.bottom &&
+          iRect.right >= pRect.left &&
+          iRect.left <= pRect.right
+        ) {
+          clearInterval(fall);
+          item.remove();
+          if (isBomb) {
+            gameOver();
+          } else {
+            score += 10;
+            scoreEl.innerText = score;
+            if (score % 50 === 0) speed += 0.5; // Gradually harder
+          }
         }
 
-        function resetGame() {
-            score = 0;
-            speedMultiplier = 1;
-            scoreElement.innerText = "0";
-            gameActive = true;
-            gameOverScreen.style.display = 'none';
-            // Clear existing items
-            document.querySelectorAll('.item').forEach(i => i.remove());
+        if (topPos > window.innerHeight) {
+          clearInterval(fall);
+          item.remove();
         }
+      }, 16);
+    }
 
-        // Spawn items
-        setInterval(createItem, 800);
-    </script>
+    function startGame() {
+      score = 0;
+      speed = 4;
+      scoreEl.innerText = '0';
+      isActive = true;
+      overlay.style.display = 'none';
+      spawnTimer = setInterval(createItem, spawnRate);
+    }
+
+    function gameOver() {
+      isActive = false;
+      clearInterval(spawnTimer);
+      statusTitle.innerText = "GAME OVER";
+      statusMsg.innerText = "Final Score: " + score;
+      overlay.style.display = 'flex';
+    }
+  </script>
 </body>
-
 </html>
